@@ -32,6 +32,9 @@ import {
 } from 'react-native-safe-area-context';
 import tailwind from 'twrnc';
 import {playlist, PlaylistType} from './src/constants/playlist';
+import {ChevronLeft} from './src/icons/ChevronLeft';
+import {EllipsisHorizontal} from './src/icons/EllipsisHorizontal';
+import {EllipsisVertical} from './src/icons/EllipsisVertical';
 
 const formatter = Intl.NumberFormat('en-IN');
 
@@ -39,24 +42,90 @@ const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 
 const posterSize = Dimensions.get('screen').height / 2;
 
-type PosterImageProps = {
+type AnimationProps = {
   sv: SharedValue<number>;
 };
-const PosterImage: React.FC<PosterImageProps> = ({sv}) => {
-  const imageStyle = useAnimatedStyle(() => {
+
+const ScreenHeader: React.FC<AnimationProps> = ({sv}) => {
+  const opacityAnim = useAnimatedStyle(() => {
     return {
-      transform: [{scale: interpolate(sv.value, [-50, 0], [1.2, 1], 'clamp')}],
-      opacity: interpolate(sv.value, [0, posterSize], [1, 0]),
+      opacity: interpolate(sv.value, [posterSize / 6, posterSize], [0, 1]),
     };
   });
   return (
-    <Animated.View style={[styles.imageContainer, imageStyle]}>
+    <Animated.View
+      style={[
+        tailwind.style('px-4 flex flex-row items-start justify-between'),
+        opacityAnim,
+      ]}>
+      <ChevronLeft />
+      <Animated.Text style={tailwind.style('text-xl text-white font-medium')}>
+        John Krasinski
+      </Animated.Text>
+      <EllipsisVertical />
+    </Animated.View>
+  );
+};
+
+const PosterImage: React.FC<AnimationProps> = ({sv}) => {
+  const inset = useSafeAreaInsets();
+  const opacityAnim = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(sv.value, [0, posterSize], [1, 0]),
+    };
+  });
+  const textAnim = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(
+        sv.value,
+        [-posterSize / 8, 0, posterSize / 8],
+        [0, 1, 0],
+      ),
+      transform: [
+        {
+          scale: interpolate(
+            sv.value,
+            [-posterSize / 8, 0, posterSize / 8],
+            [1.1, 1, 0.95],
+            'clamp',
+          ),
+        },
+        {translateY: inset.top},
+      ],
+    };
+  });
+  const scaleAnim = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          scale: interpolate(sv.value, [-50, 0], [1.3, 1], {
+            extrapolateLeft: 'extend',
+            extrapolateRight: 'clamp',
+          }),
+        },
+      ],
+    };
+  });
+  return (
+    <Animated.View style={[styles.imageContainer, opacityAnim]}>
       <Animated.Image
-        style={[styles.imageStyle]}
+        style={[styles.imageStyle, scaleAnim]}
         source={require('./src/assets/poster-unsplash.jpg')}
       />
+      <Animated.View
+        style={[
+          tailwind.style(
+            'absolute bottom-0 top-0 left-0 right-0 justify-end items-center z-10',
+          ),
+          textAnim,
+        ]}>
+        <Animated.Text
+          style={tailwind.style('text-6xl font-bold text-white text-center')}>
+          John Krasinski
+        </Animated.Text>
+      </Animated.View>
       <AnimatedLinearGradient
-        style={tailwind.style('absolute inset-0')}
+        style={[tailwind.style('absolute inset-0'), scaleAnim]}
         colors={[
           `rgba(0,0,0,${0})`,
           `rgba(0,0,0,${0.1})`,
@@ -112,6 +181,7 @@ const SpotifyScreen = () => {
   return (
     <Animated.View
       style={[tailwind.style('flex-1 bg-black'), {paddingTop: inset.top}]}>
+      <ScreenHeader sv={sv} />
       <PosterImage sv={sv} />
       <Animated.View style={tailwind.style('flex-1')}>
         <Animated.ScrollView
@@ -127,7 +197,9 @@ const SpotifyScreen = () => {
                 layoutY.value = event.nativeEvent.layout.y;
               }}
               style={[
-                tailwind.style('flex items-center justify-center z-10 pb-4'),
+                tailwind.style(
+                  'flex items-center justify-center z-10 pb-4 pt-4 shadow-md',
+                ),
                 stickyElement,
               ]}>
               <Pressable
@@ -143,7 +215,7 @@ const SpotifyScreen = () => {
               </Pressable>
             </Animated.View>
             <Animated.View
-              style={tailwind.style('flex items-center justify-center pb-4')}>
+              style={tailwind.style('flex items-center justify-center')}>
               <Pressable
                 style={tailwind.style('px-10 py-2 items-center rounded-full')}>
                 <Text style={tailwind.style('text-base font-bold text-white')}>
@@ -156,26 +228,33 @@ const SpotifyScreen = () => {
               {playlist.map((song: PlaylistType, index: number) => {
                 return (
                   <View
-                    style={tailwind.style('flex flex-row items-center py-2')}
+                    style={tailwind.style(
+                      'flex flex-row items-center justify-between py-2 px-4',
+                    )}
                     key={JSON.stringify(song.name + index)}>
-                    <Text
-                      style={tailwind.style(
-                        'text-sm font-bold text-white opacity-50 px-5',
-                      )}>
-                      {index + 1}
-                    </Text>
-                    <View>
+                    <View style={tailwind.style('flex flex-row items-center')}>
                       <Text
                         style={tailwind.style(
-                          'text-base font-medium text-white',
+                          'text-sm font-bold text-white opacity-50 pr-5',
                         )}>
-                        {song.name}
+                        {index + 1}
                       </Text>
-                      <Text
-                        style={tailwind.style('text-sm text-white opacity-60')}>
-                        {formatter.format(song.plays)}
-                      </Text>
+                      <View>
+                        <Text
+                          style={tailwind.style(
+                            'text-base font-medium text-white',
+                          )}>
+                          {song.name}
+                        </Text>
+                        <Text
+                          style={tailwind.style(
+                            'text-sm text-white opacity-60',
+                          )}>
+                          {formatter.format(song.plays)}
+                        </Text>
+                      </View>
                     </View>
+                    <EllipsisHorizontal />
                   </View>
                 );
               })}
