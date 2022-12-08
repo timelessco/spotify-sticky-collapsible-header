@@ -13,6 +13,7 @@ import {
   Dimensions,
   LayoutChangeEvent,
   Pressable,
+  StatusBar,
   StyleSheet,
   Text,
   View,
@@ -269,6 +270,7 @@ const SpotifyScreen = () => {
 const App = () => {
   return (
     <SafeAreaProvider>
+      <StatusBar barStyle={'light-content'} />
       <SpotifyScreen />
     </SafeAreaProvider>
   );
