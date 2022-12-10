@@ -216,31 +216,36 @@ const SpotifyScreen = () => {
               </Pressable>
             </Animated.View>
             <Animated.View
-              style={tailwind.style('flex items-center justify-center')}>
+              style={tailwind.style(
+                'flex items-start justify-center pb-3 pt-4',
+              )}>
               <Pressable
-                style={tailwind.style('px-10 py-2 items-center rounded-full')}>
-                <Text style={tailwind.style('text-base font-bold text-white')}>
+                style={tailwind.style('px-10 items-start rounded-full')}>
+                <Text
+                  style={tailwind.style(
+                    'text-[18px] tracking-[.15] font-bold text-white',
+                  )}>
                   Popular
                 </Text>
               </Pressable>
             </Animated.View>
             {/* Songs List */}
-            <View style={tailwind.style('mt-3')}>
+            <View style={tailwind.style('')}>
               {playlist.map((song: PlaylistType, index: number) => {
                 return (
                   <View
                     style={tailwind.style(
-                      'flex flex-row items-center justify-between py-2 px-4',
+                      'flex flex-row items-center justify-between py-2 px-5',
                     )}
                     key={JSON.stringify(song.name + index)}>
                     <View style={tailwind.style('flex flex-row items-center')}>
                       <Text
                         style={tailwind.style(
-                          'text-sm font-bold text-white opacity-50 pr-5',
+                          'absolute text-sm font-bold text-white opacity-50',
                         )}>
                         {index + 1}
                       </Text>
-                      <View>
+                      <View style={tailwind.style('pl-5')}>
                         <Text
                           style={tailwind.style(
                             'text-base font-medium text-white',
