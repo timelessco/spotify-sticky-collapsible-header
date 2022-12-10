@@ -111,7 +111,7 @@ const PosterImage: React.FC<AnimationProps> = ({sv}) => {
     <Animated.View style={[styles.imageContainer, opacityAnim]}>
       <Animated.Image
         style={[styles.imageStyle, scaleAnim]}
-        source={require('./src/assets/poster-unsplash.jpg')}
+        source={require('./src/assets/artist.jpeg')}
       />
       <Animated.View
         style={[
@@ -137,6 +137,41 @@ const PosterImage: React.FC<AnimationProps> = ({sv}) => {
         ]}
       />
     </Animated.View>
+  );
+};
+
+const Playlist = () => {
+  return (
+    <View style={tailwind.style('')}>
+      {playlist.map((song: PlaylistType, index: number) => {
+        return (
+          <View
+            style={tailwind.style(
+              'flex flex-row items-center justify-between py-2 px-5',
+            )}
+            key={JSON.stringify(song.name + index)}>
+            <View style={tailwind.style('flex flex-row items-center')}>
+              <Text
+                style={tailwind.style(
+                  'absolute text-sm font-bold text-white opacity-50',
+                )}>
+                {index + 1}
+              </Text>
+              <View style={tailwind.style('pl-5')}>
+                <Text
+                  style={tailwind.style('text-base font-medium text-white')}>
+                  {song.name}
+                </Text>
+                <Text style={tailwind.style('text-sm text-white opacity-60')}>
+                  {formatter.format(song.plays)}
+                </Text>
+              </View>
+            </View>
+            <EllipsisHorizontal />
+          </View>
+        );
+      })}
+    </View>
   );
 };
 
@@ -230,41 +265,7 @@ const SpotifyScreen = () => {
               </Pressable>
             </Animated.View>
             {/* Songs List */}
-            <View style={tailwind.style('')}>
-              {playlist.map((song: PlaylistType, index: number) => {
-                return (
-                  <View
-                    style={tailwind.style(
-                      'flex flex-row items-center justify-between py-2 px-5',
-                    )}
-                    key={JSON.stringify(song.name + index)}>
-                    <View style={tailwind.style('flex flex-row items-center')}>
-                      <Text
-                        style={tailwind.style(
-                          'absolute text-sm font-bold text-white opacity-50',
-                        )}>
-                        {index + 1}
-                      </Text>
-                      <View style={tailwind.style('pl-5')}>
-                        <Text
-                          style={tailwind.style(
-                            'text-base font-medium text-white',
-                          )}>
-                          {song.name}
-                        </Text>
-                        <Text
-                          style={tailwind.style(
-                            'text-sm text-white opacity-60',
-                          )}>
-                          {formatter.format(song.plays)}
-                        </Text>
-                      </View>
-                    </View>
-                    <EllipsisHorizontal />
-                  </View>
-                );
-              })}
-            </View>
+            <Playlist />
           </Animated.View>
         </Animated.ScrollView>
       </Animated.View>
