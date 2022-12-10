@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Animated, {
+  Extrapolation,
   interpolate,
   SharedValue,
   useAnimatedScrollHandler,
@@ -53,12 +54,35 @@ const ScreenHeader: React.FC<AnimationProps> = ({sv}) => {
       opacity: interpolate(
         sv.value,
         [
-          posterSize - (headerTop + inset.top) - 1,
-          posterSize - (headerTop + inset.top),
+          ((posterSize - (headerTop + inset.top)) / 4) * 3,
           posterSize - (headerTop + inset.top) + 1,
         ],
-        [0.8, 0.9, 1],
+        [0, 1],
       ),
+      transform: [
+        {
+          scale: interpolate(
+            sv.value,
+            [
+              ((posterSize - (headerTop + inset.top)) / 4) * 3,
+              posterSize - (headerTop + inset.top) + 1,
+            ],
+            [0.98, 1],
+            Extrapolation.CLAMP,
+          ),
+        },
+        {
+          translateY: interpolate(
+            sv.value,
+            [
+              ((posterSize - (headerTop + inset.top)) / 4) * 3,
+              posterSize - (headerTop + inset.top) + 1,
+            ],
+            [-10, 0],
+            Extrapolation.CLAMP,
+          ),
+        },
+      ],
       paddingTop: inset.top === 0 ? 8 : inset.top,
     };
   });
@@ -81,25 +105,39 @@ const ScreenHeader: React.FC<AnimationProps> = ({sv}) => {
 
 const PosterImage: React.FC<AnimationProps> = ({sv}) => {
   const inset = useSafeAreaInsets();
+  const layoutY = useSharedValue(0);
   const opacityAnim = useAnimatedStyle(() => {
     return {
-      opacity: interpolate(sv.value, [0, posterSize], [1, 0]),
+      opacity: interpolate(
+        sv.value,
+        [0, posterSize - (headerTop + inset.top) / 0.9],
+        [1, 0],
+        Extrapolation.CLAMP,
+      ),
     };
   });
   const textAnim = useAnimatedStyle(() => {
     return {
       opacity: interpolate(
         sv.value,
-        [-posterSize / 8, 0, (posterSize - (headerTop + inset.top)) / 8],
+        [-posterSize / 8, 0, posterSize - (headerTop + inset.top) / 0.8],
         [0, 1, 0],
+        Extrapolation.CLAMP,
       ),
       transform: [
         {
           scale: interpolate(
             sv.value,
-            [-posterSize / 8, 0, posterSize / 8],
+            [-posterSize / 8, 0, (posterSize - (headerTop + inset.top)) / 2],
             [1.1, 1, 0.95],
             'clamp',
+          ),
+        },
+        {
+          translateY: interpolate(
+            sv.value,
+            [layoutY.value - 1, layoutY.value, layoutY.value + 1],
+            [0, 0, -1],
           ),
         },
       ],
@@ -124,6 +162,10 @@ const PosterImage: React.FC<AnimationProps> = ({sv}) => {
         source={require('./src/assets/artist.jpeg')}
       />
       <Animated.View
+        onLayout={(event: LayoutChangeEvent) => {
+          'worklet';
+          layoutY.value = event.nativeEvent.layout.y;
+        }}
         style={[
           tailwind.style(
             'absolute bottom-0 top-0 left-0 right-0 justify-end items-center px-5  z-10',
