@@ -21,7 +21,6 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import Animated, {
   interpolate,
-  interpolateColor,
   SharedValue,
   useAnimatedScrollHandler,
   useAnimatedStyle,
@@ -42,21 +41,33 @@ const formatter = Intl.NumberFormat('en-IN');
 const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 
 const posterSize = Dimensions.get('screen').height / 2;
-
+const headerTop = 44 - 16;
 type AnimationProps = {
   sv: SharedValue<number>;
 };
 
 const ScreenHeader: React.FC<AnimationProps> = ({sv}) => {
+  const inset = useSafeAreaInsets();
   const opacityAnim = useAnimatedStyle(() => {
     return {
-      opacity: interpolate(sv.value, [posterSize / 6, posterSize], [0, 1]),
+      opacity: interpolate(
+        sv.value,
+        [
+          posterSize - (headerTop + inset.top) - 1,
+          posterSize - (headerTop + inset.top),
+          posterSize - (headerTop + inset.top) + 1,
+        ],
+        [0.8, 0.9, 1],
+      ),
+      paddingTop: inset.top === 0 ? 8 : inset.top,
     };
   });
   return (
     <Animated.View
       style={[
-        tailwind.style('px-4 flex flex-row items-start justify-between'),
+        tailwind.style(
+          'absolute w-full px-4 pb-2 flex flex-row items-start justify-between z-10 bg-black',
+        ),
         opacityAnim,
       ]}>
       <ChevronLeft />
@@ -79,7 +90,7 @@ const PosterImage: React.FC<AnimationProps> = ({sv}) => {
     return {
       opacity: interpolate(
         sv.value,
-        [-posterSize / 8, 0, posterSize / 8],
+        [-posterSize / 8, 0, (posterSize - (headerTop + inset.top)) / 8],
         [0, 1, 0],
       ),
       transform: [
@@ -91,7 +102,6 @@ const PosterImage: React.FC<AnimationProps> = ({sv}) => {
             'clamp',
           ),
         },
-        {translateY: inset.top},
       ],
     };
   });
@@ -116,11 +126,12 @@ const PosterImage: React.FC<AnimationProps> = ({sv}) => {
       <Animated.View
         style={[
           tailwind.style(
-            'absolute bottom-0 top-0 left-0 right-0 justify-end items-center z-10',
+            'absolute bottom-0 top-0 left-0 right-0 justify-end items-center px-5  z-10',
           ),
           textAnim,
         ]}>
         <Animated.Text
+          numberOfLines={2}
           style={tailwind.style('text-6xl font-bold text-white text-center')}>
           John Krasinski
         </Animated.Text>
@@ -142,22 +153,27 @@ const PosterImage: React.FC<AnimationProps> = ({sv}) => {
 
 const Playlist = () => {
   return (
-    <View style={tailwind.style('')}>
+    <View style={tailwind.style('bg-black')}>
       {playlist.map((song: PlaylistType, index: number) => {
         return (
           <View
             style={tailwind.style(
-              'flex flex-row items-center justify-between py-2 px-5',
+              'flex flex-row items-center justify-between py-2 mr-5',
             )}
             key={JSON.stringify(song.name + index)}>
             <View style={tailwind.style('flex flex-row items-center')}>
-              <Text
+              <View
                 style={tailwind.style(
-                  'absolute text-sm font-bold text-white opacity-50',
+                  'absolute w-10 flex-row items-center justify-center',
                 )}>
-                {index + 1}
-              </Text>
-              <View style={tailwind.style('pl-5')}>
+                <Text
+                  style={tailwind.style(
+                    'text-sm text-center font-bold text-white opacity-50',
+                  )}>
+                  {index + 1}
+                </Text>
+              </View>
+              <View style={tailwind.style('pl-10')}>
                 <Text
                   style={tailwind.style('text-base font-medium text-white')}>
                   {song.name}
@@ -189,25 +205,24 @@ const SpotifyScreen = () => {
 
   const animatedScrollStyle = useAnimatedStyle(() => {
     return {
-      paddingTop: initialTranslateValue - 22,
+      paddingTop: initialTranslateValue,
     };
   });
 
   const layoutY = useSharedValue(0);
 
   const stickyElement = useAnimatedStyle(() => {
-    const stickyElementBg = interpolateColor(
-      sv.value,
-      [layoutY.value, layoutY.value + 1],
-      ['rgba(0,0,0,0)', 'rgba(0,0,0,1)'],
-    ) as unknown as string;
     return {
-      backgroundColor: stickyElementBg,
+      backgroundColor: 'black',
       transform: [
         {
           translateY: interpolate(
             sv.value,
-            [layoutY.value - 1, layoutY.value, layoutY.value + 1],
+            [
+              layoutY.value - (headerTop + inset.top) - 1,
+              layoutY.value - (headerTop + inset.top),
+              layoutY.value - (headerTop + inset.top) + 1,
+            ],
             [0, 0, 1],
           ),
         },
@@ -215,8 +230,7 @@ const SpotifyScreen = () => {
     };
   });
   return (
-    <Animated.View
-      style={[tailwind.style('flex-1 bg-black'), {paddingTop: inset.top}]}>
+    <Animated.View style={[tailwind.style('flex-1 bg-black')]}>
       <ScreenHeader sv={sv} />
       <PosterImage sv={sv} />
       <Animated.View style={tailwind.style('flex-1')}>
@@ -234,7 +248,7 @@ const SpotifyScreen = () => {
               }}
               style={[
                 tailwind.style(
-                  'flex items-center justify-center z-10 pb-4 pt-4 shadow-md',
+                  'flex items-center justify-center z-10 pb-4 pt-4',
                 ),
                 stickyElement,
               ]}>
@@ -252,7 +266,7 @@ const SpotifyScreen = () => {
             </Animated.View>
             <Animated.View
               style={tailwind.style(
-                'flex items-start justify-center pb-3 pt-4',
+                'flex items-start justify-center pb-3 pt-4 bg-black',
               )}>
               <Pressable
                 style={tailwind.style('px-10 items-start rounded-full')}>
@@ -291,6 +305,7 @@ const styles = StyleSheet.create({
   imageStyle: {
     height: '100%',
     width: '100%',
+    resizeMode: 'cover',
   },
 });
 
